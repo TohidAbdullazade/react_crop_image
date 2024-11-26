@@ -1,42 +1,38 @@
-import { useState } from "react";
-import useImageCropper from "./components/hooks/useCrop";
-import { Image, Upload } from "antd";
-
-const { Dragger } = Upload;
+import { Button, Form } from "antd";
+import { useForm } from "antd/es/form/Form";
+import CropSingleFile from "./components/cropSingleFile";
+import CropSliderImages from "./components/cropSliderImages";
+import axios from "axios";
 
 const App = () => {
-  const { handleImageChange, CropModal } = useImageCropper();
-  const [image, setImage] = useState<string | null>(null);
+  const [form] = useForm();
+
+  const handleFinish = (value: any) => {
+    const formData = new FormData();
+
+    formData.append("mobileCoverImage", value.mobileCoverImage);
+    formData.append("mobileSliderImage", value.mobileSliderImage);
+
+    axios.post("/api", formData).then((res) => {
+      console.log(res);
+    });
+  };
 
   return (
     <div style={{ textAlign: "center" }}>
       <h1>Image Cropper in React</h1>
-
-      <Dragger
-        accept="image/*"
-        multiple={false}
-        showUploadList={false}
-        customRequest={({ file }) => {
-          handleImageChange(file, "cover");
-        }}
-        style={{ padding: 20, border: "1px dashed #d9d9d9", borderRadius: 4 }}
-      >
-        <p>Drag and drop an image here, or click to select one</p>
-      </Dragger>
-
-      <CropModal
-        onDone={(croppedImage) => {
-          setImage(croppedImage);
-        }}
-      />
-
-      {image && (
-        <Image
-          src={image}
-          alt="Cropped"
-          style={{ marginTop: "20px", width: 200, height: 200 }}
-        />
-      )}
+      {/* Form */}
+      <Form form={form} onFinish={handleFinish}>
+        <Form.Item valuePropName="value" name="mobileCoverImage">
+          <CropSingleFile />
+        </Form.Item>
+        <Form.Item valuePropName="value" name="mobileSliderImage">
+          <CropSliderImages />
+        </Form.Item>
+        <Form.Item>
+          <Button htmlType="submit">Submit</Button>
+        </Form.Item>
+      </Form>
     </div>
   );
 };

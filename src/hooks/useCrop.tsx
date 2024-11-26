@@ -5,13 +5,12 @@ import { useEffect, useRef, useState } from "react";
 
 const useImageCropper = () => {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [croppedImage, setCroppedImage] = useState<any>(null);
   const [aspectRatio, setAspectRatio] = useState<number>(9 / 16);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const cropperRef = useRef<Cropper | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
-  const [key, setKey] = useState("");
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -37,23 +36,33 @@ const useImageCropper = () => {
     };
   }, [imageSrc, aspectRatio]);
 
-  const handleImageChange = (file: any, key: string) => {
-    setKey(key);
+  const handleImageChange = (file: File) => {
     openModal();
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageSrc(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-    return { croppedImage, key };
+    if (!file) return null;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const image = reader.result as string;
+      setImageSrc(image);
+    };
+
+    reader.readAsDataURL(file);
   };
+
+  // Islek
+  // const handleCrop = () => {
+  //   if (cropperRef.current) {
+  //     const croppedDataUrl = cropperRef.current.getCroppedCanvas().toDataURL();
+  //     setCroppedImage(croppedDataUrl);
+  //   }
+  // };
 
   const handleCrop = () => {
     if (cropperRef.current) {
-      const croppedDataUrl = cropperRef.current.getCroppedCanvas().toDataURL();
-      setCroppedImage(croppedDataUrl);
+      cropperRef.current.getCroppedCanvas().toBlob((blob) => {
+        if (blob) {
+          setCroppedImage(blob as File);
+        }
+      });
     }
   };
 
@@ -63,13 +72,9 @@ const useImageCropper = () => {
     const value = event.target.value === "16/9" ? 16 / 9 : 9 / 16;
     setAspectRatio(value);
   };
-  const CropModal = ({
-    onDone,
-  }: {
-    onDone: (image: string | null) => void;
-  }) => {
+  const CropModal = ({ onDone }: { onDone: (image: any) => void }) => {
     useEffect(() => {
-      onDone(croppedImage);
+      onDone(croppedImage as File);
       // setIsModalOpen(false);
     }, [croppedImage]);
     return (
@@ -86,6 +91,7 @@ const useImageCropper = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            zIndex: 999,
           }}
         >
           <div
