@@ -12,6 +12,7 @@ const useImageCropper = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const [key, setKey] = useState("");
+
   const closeModal = () => {
     setIsModalOpen(false);
     // handleImageChange({ target: { files: null } } as any);
